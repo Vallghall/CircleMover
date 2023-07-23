@@ -1,46 +1,35 @@
 #include "raylib.h"
 
-float limit(float value) {
-    const float speed_limit = 10.0f;
-
-    if (value > speed_limit)
-        return speed_limit;
-
-    if (value < -speed_limit)
-        return -speed_limit;
-
-    return value;
-}
+#define WIDTH 500
+#define HEIGHT 500
+#define TITLE "Move this circle"
+#define RADIUS 40.0f
+#define DECOY 0.995f
+#define SPEED_LIMIT 10.0f
+#define limit(value) ((value > SPEED_LIMIT) ? SPEED_LIMIT : (value < -SPEED_LIMIT) ? -SPEED_LIMIT : value)
 
 int main() {
-    // constants
-    const int width = 500;
-    const int height = 500;
-    const char* title = "Move this circle";
-    const float radius = 40.0f;
-    const float decoy = 0.995f;
-
-    // variables
     bool isHeld = false;
     Vector2 speed = {
         0.0f,
         0.0f,
     };
     Vector2 center = {
-            (float) width/2,
-            (float) height/2,
+            (float) WIDTH/2,
+            (float) HEIGHT/2,
     };
 
-    InitWindow(width, height, title);
+    InitWindow(WIDTH, HEIGHT, TITLE);
     SetTargetFPS(60);
 
     // GAME LOOP
     while (!WindowShouldClose()) {
         // UPDATE
+
         {
             // logic for holding and moving a circle with a mouse
             Vector2 cursorPos = GetMousePosition();
-            if (CheckCollisionPointCircle(cursorPos, center, radius) || isHeld) {
+            if (CheckCollisionPointCircle(cursorPos, center, RADIUS) || isHeld) {
                 if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
                     isHeld = true;
                     speed.x = 0.0f;
@@ -50,8 +39,16 @@ int main() {
                 if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
                     Vector2 delta = GetMouseDelta();
 
-                    center.x = center.x + delta.x;
-                    center.y = center.y + delta.y;
+                    // Check collision with borders
+                    {
+                        float newX = center.x + delta.x;
+                        float newY = center.y + delta.y;
+
+                        if (newX > RADIUS && newX < WIDTH - RADIUS)
+                            center.x = newX;
+                        if (newY > RADIUS && newY < HEIGHT - RADIUS)
+                            center.y = newY;
+                    }
                 }
             }
 
@@ -67,17 +64,16 @@ int main() {
             if (!isHeld) {
                 // Check collision with borders
                 {
-                    if (center.x <= radius || center.x >= width  - radius) speed.x *= -1.0f;
-                    if (center.y <= radius || center.y >= height - radius) speed.y *= -1.0f;
+                    if (center.x <= RADIUS || center.x >= WIDTH  - RADIUS) speed.x *= -1.0f;
+                    if (center.y <= RADIUS || center.y >= HEIGHT - RADIUS) speed.y *= -1.0f;
                 }
 
                 center.x += speed.x;
                 center.y += speed.y;
 
-                speed.x *= decoy;
-                speed.y *= decoy;
+                speed.x *= DECOY;
+                speed.y *= DECOY;
             }
-
         }
         // UPDATE
 
@@ -91,7 +87,5 @@ int main() {
         // DRAW
     }
     // GAME LOOP
-
-    CloseWindow();
     return 0;
 }
